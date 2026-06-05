@@ -1,13 +1,5 @@
 # Ngày 7 — Nền Tảng Dữ Liệu: Embedding & Vector Store
 
-> **Báo cáo của Trần Quốc Khánh (2A202600679)**: [Xem báo cáo chi tiết tại đây](2A202600679_Tran_Quoc_Khanh/report/REPORT.md)
->
-> **Tóm tắt kết quả:**
-> - **Domain**: Pháp luật Việt Nam về dữ liệu và hình sự.
-> - **Strategy**: `ArticleBasedLegalChunker` - Chunking theo Điều luật.
-> - **Kết quả Benchmark**: Đạt **5/5** câu trả lời chính xác trên bộ câu hỏi pháp luật.
-> - **Trạng thái Code**: Toàn bộ 42/42 tests pass thành công.
-
 ---
 
 ## Mục Tiêu
