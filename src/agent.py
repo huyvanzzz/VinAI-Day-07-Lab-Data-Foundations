@@ -18,34 +18,15 @@ class KnowledgeBaseAgent:
         self.llm_fn = llm_fn
 
     def answer(self, question: str, top_k: int = 3) -> str:
-        retrieved_chunks = self.store.search(question, top_k=top_k)
-
-        if retrieved_chunks:
-            context_parts = []
-            for index, chunk in enumerate(retrieved_chunks, start=1):
-                source = chunk["metadata"].get("source", chunk["metadata"].get("doc_id", "unknown"))
-                context_parts.append(
-                    "\n".join(
-                        [
-                            f"[Chunk {index}]",
-                            f"Source: {source}",
-                            f"Score: {chunk['score']:.4f}",
-                            chunk["content"],
-                        ]
-                    )
-                )
-            context_block = "\n\n".join(context_parts)
-        else:
-            context_block = "No relevant context was retrieved from the knowledge base."
-
-        prompt = "\n\n".join(
-            [
-                "You are a knowledge base assistant.",
-                "Answer the question using only the retrieved context below.",
-                "If the context is insufficient, say that the answer is not available in the provided knowledge base.",
-                f"Question: {question}",
-                f"Retrieved Context:\n{context_block}",
-                "Answer:",
-            ]
+        results = self.store.search(question, top_k=top_k)
+        context = "\n\n".join(
+            f"[{index}] {result['content']}" for index, result in enumerate(results, start=1)
+        )
+        prompt = (
+            "Use the following context chunks to answer the question. "
+            "If the answer is not in the context, say you do not know.\n\n"
+            f"Context:\n{context}\n\n"
+            f"Question: {question}\n"
+            "Answer:"
         )
         return self.llm_fn(prompt)
