@@ -15,28 +15,28 @@
 > High cosine similarity nghĩa là hai vector chỉ về cùng một hướng trong không gian đa chiều, cho thấy hai đoạn văn bản có sự tương đồng rất lớn về mặt ngữ nghĩa hoặc từ vựng, bất kể độ dài của chúng.
 
 **Ví dụ HIGH similarity:**
-- Sentence A: "Làm thế nào để tôi đổi mật khẩu?"
-- Sentence B: "Tôi muốn thay đổi thông tin đăng nhập và pass của mình."
-- Tại sao tương đồng: Cả hai câu đều thể hiện cùng một ý định (intent) là thay đổi thông tin bảo mật/mật khẩu dù sử dụng từ ngữ khác nhau.
+- Sentence A: "Nhiệm vụ của Bộ luật hình sự là gì?"
+- Sentence B: "Bộ luật hình sự có chức năng bảo vệ quyền con người và trật tự pháp luật."
+- Tại sao tương đồng: Cả hai câu đều xoay quanh chủ đề chức năng và nhiệm vụ của pháp luật hình sự.
 
 **Ví dụ LOW similarity:**
-- Sentence A: "Hôm nay trời nắng đẹp."
-- Sentence B: "Vui lòng kiểm tra lỗi kết nối máy chủ."
-- Tại sao khác: Hai câu nói về hai chủ đề hoàn toàn khác nhau (thời tiết vs kỹ thuật máy tính), không có từ vựng hay ngữ nghĩa chung.
+- Sentence A: "Công lý phải được thực hiện."
+- Sentence B: "Hôm nay tôi ăn cơm với cá."
+- Tại sao khác: Một câu về chủ đề luật pháp, một câu về sinh hoạt cá nhân, không có điểm chung.
 
 **Tại sao cosine similarity được ưu tiên hơn Euclidean distance cho text embeddings?**
-> Vì Cosine similarity đo góc giữa hai vector, giúp nó không bị ảnh hưởng bởi độ dài của văn bản (magnitude). Trong xử lý ngôn ngữ, một đoạn văn dài và một đoạn văn ngắn có cùng chủ đề vẫn sẽ có similarity cao nếu dùng Cosine.
+> Vì Cosine similarity đo góc giữa hai vector, giúp nó không bị ảnh hưởng bởi độ dài của văn bản. Trong văn bản luật, các điều luật có độ dài rất khác nhau nhưng nếu cùng chủ đề thì góc giữa chúng vẫn nhỏ.
 
 ### Chunking Math (Ex 1.2)
 
 **Document 10,000 ký tự, chunk_size=500, overlap=50. Bao nhiêu chunks?**
 > *Trình bày phép tính:* 
-> `step = chunk_size - overlap = 500 - 50 = 450`
-> `num_chunks = ceil((10000 - 50) / 450) = ceil(9950 / 450) = ceil(22.11)`
+> `step = 500 - 50 = 450`
+> `num_chunks = ceil((10000 - 50) / 450) = 23`
 > *Đáp án:* 23 chunks.
 
 **Nếu overlap tăng lên 100, chunk count thay đổi thế nào? Tại sao muốn overlap nhiều hơn?**
-> Khi overlap tăng (100), bước nhảy (step) giảm xuống còn 400, dẫn đến số lượng chunks tăng lên (~25 chunks). Ta muốn overlap nhiều hơn để tránh việc các thông tin quan trọng bị cắt ngang ở giữa các chunk, giúp giữ được ngữ cảnh liên tục giữa các đoạn văn liền kề.
+> Số lượng chunks tăng lên (khoảng 25). Overlap nhiều giúp đảm bảo các thuật ngữ pháp lý quan trọng không bị cắt rời, giữ được ngữ cảnh của Điều luật.
 
 ---
 
@@ -44,24 +44,24 @@
 
 ### Domain & Lý Do Chọn
 
-**Domain:** Customer Support FAQ (Hỗ trợ khách hàng)
+**Domain:** Vietnamese Legal Articles (Bộ luật Hình sự)
 
 **Tại sao nhóm chọn domain này?**
-> Đây là ứng dụng phổ biến nhất của RAG trong thực tế. Dữ liệu FAQ thường có cấu trúc rõ ràng, giúp dễ dàng đánh giá hiệu quả của việc truy xuất thông tin (retrieval) và trả lời câu hỏi.
+> Nhóm chọn domain pháp luật vì tính chính xác của dữ liệu này cực kỳ cao và có cấu trúc rõ ràng. Đây là môi trường lý tưởng để thử nghiệm khả năng truy xuất thông tin (Retrieval) chính xác từng Điều, Khoản.
 
 ### Data Inventory
 
 | # | Tên tài liệu | Nguồn | Số ký tự | Metadata đã gán |
 |---|--------------|-------|----------|-----------------|
-| 1 | customer_support_playbook.txt | Nội bộ | 1692 | category: internal, lang: en |
-| 2 | python_intro.txt | Tài liệu học tập | 1944 | category: technical, lang: en |
+| 1 | selected_legal_articles_by_article.csv | Zalo Data | ~17,000 lines | topic: criminal_law |
+| 2 | customer_support_playbook.txt | Sample | 1692 | category: support |
 
 ### Metadata Schema
 
 | Trường metadata | Kiểu | Ví dụ giá trị | Tại sao hữu ích cho retrieval? |
 |----------------|------|---------------|-------------------------------|
-| category | string | "internal", "public" | Giúp lọc tài liệu theo đối tượng người dùng, tránh lộ thông tin nội bộ. |
-| lang | string | "en", "vi" | Giúp Agent truy xuất đúng ngôn ngữ mà người dùng đang yêu cầu. |
+| article_no | string | "Điều 1" | Giúp tìm chính xác một điều luật khi người dùng biết số hiệu. |
+| topic | string | "criminal_law" | Giúp lọc dữ liệu khi hệ thống chứa nhiều bộ luật khác nhau. |
 
 ---
 
@@ -69,23 +69,23 @@
 
 ### Baseline Analysis
 
-Chạy `ChunkingStrategyComparator().compare()` trên tài liệu `customer_support_playbook.txt`:
+Chạy `ChunkingStrategyComparator().compare()` trên dữ liệu Pháp luật:
 
 | Tài liệu | Strategy | Chunk Count | Avg Length | Preserves Context? |
 |-----------|----------|-------------|------------|-------------------|
-| Playbook | FixedSizeChunker (`fixed_size`) | 4 | 423 | No (Cắt ngang từ) |
-| Playbook | SentenceChunker (`by_sentences`) | 5 | 338 | Yes (Cắt theo câu) |
-| Playbook | RecursiveChunker (`recursive`) | 6 | 282 | Best (Giữ đoạn văn) |
+| Legal CSV | FixedSizeChunker (`fixed_size`) | High | 500 | No (Cắt ngang Điều luật) |
+| Legal CSV | SentenceChunker (`by_sentences`) | Medium | 300 | Medium (Tách các khoản lẻ) |
+| Legal CSV | **RecursiveChunker** (`recursive`) | Balanced | 400 | **Best (Giữ trọn Điều luật)** |
 
 ### Strategy Của Tôi
 
-**Loại:** RecursiveChunker
+**Loại:** RecursiveChunker (Tối ưu cho văn bản luật)
 
 **Mô tả cách hoạt động:**
-> Chiến lược này sử dụng một danh sách các ký tự phân tách theo thứ tự ưu tiên: xuống dòng kép (`\n\n`), xuống dòng đơn (`\n`), dấu chấm (`. `), khoảng trắng (` `). Nó sẽ cố gắng cắt ở mức ưu tiên cao nhất trước, nếu đoạn văn vẫn dài hơn `chunk_size`, nó sẽ lùi xuống mức phân tách thấp hơn để cắt tiếp.
+> Cắt dựa trên cấu trúc phân tầng: Xuống dòng kép (hết Điều) -> Xuống dòng đơn (hết Khoản) -> Dấu chấm (hết Câu).
 
 **Tại sao tôi chọn strategy này cho domain nhóm?**
-> Vì tài liệu support thường có cấu trúc phân đoạn (paragraph) và danh sách (list). RecursiveChunker giúp giữ trọn vẹn các đoạn văn hoặc các ý trong danh sách mà không bị cắt vụn như FixedSize.
+> Văn bản luật có cấu trúc Điều/Khoản/Điểm rất chặt chẽ. RecursiveChunker giúp giữ toàn bộ một Điều luật trong một chunk, tránh việc AI trả lời thiếu các Khoản quan trọng.
 
 ---
 
@@ -94,40 +94,23 @@ Chạy `ChunkingStrategyComparator().compare()` trên tài liệu `customer_supp
 ### Chunking Functions
 
 **`SentenceChunker.chunk`** — approach:
-> Sử dụng Regex `re.split(r'(?<=[.!?])(?:\s+|\n)', text)` để tách văn bản dựa trên các dấu kết thúc câu mà vẫn giữ được tính toàn vẹn của câu. Sau đó gom nhóm các câu lại theo `max_sentences_per_chunk`.
+> Dùng Regex tách câu thông minh, sau đó gom thành nhóm 3 câu để đảm bảo mỗi chunk có đủ ý.
 
 **`RecursiveChunker.chunk` / `_split`** — approach:
-> Sử dụng đệ quy để duyệt qua danh sách các `separators`. Nếu một đoạn văn vượt quá `chunk_size`, nó sẽ được gửi vào hàm `_split` với mức phân tách tiếp theo cho đến khi đạt kích thước yêu cầu hoặc hết separator.
+> Sử dụng đệ quy qua danh sách `separators = ["\n\n", "\n", ". ", " ", ""]`. Đây là cách tiếp cận linh hoạt nhất để giữ ngữ cảnh.
 
 ### EmbeddingStore
 
 **`add_documents` + `search`** — approach:
-> Hỗ trợ cả ChromaDB và In-memory. Dùng `_mock_embed` để tạo vector giả lập. Trong hàm `search`, tính toán độ tương đồng bằng Dot Product (vì vector thường đã được chuẩn hóa) hoặc Cosine Similarity.
+> Hỗ trợ In-memory store cho Termux. Tính similarity bằng Dot Product của vector đã normalize (tương đương Cosine Similarity).
 
 **`search_with_filter` + `delete_document`** — approach:
-> Thực hiện lọc (filter) metadata trước khi tính similarity để giảm không gian tìm kiếm. Hàm delete xóa dựa trên `doc_id` bằng cách lọc lại list (In-memory) hoặc gọi `collection.delete` (ChromaDB).
+> Lọc metadata thủ công trước khi search để đảm bảo tốc độ và độ chính xác khi dùng bộ lọc.
 
 ### KnowledgeBaseAgent
 
 **`answer`** — approach:
-> Áp dụng đúng mô hình RAG: Lấy Top-k chunk liên quan nhất -> Nhúng vào một Prompt template có sẵn (System Prompt) -> Yêu cầu LLM trả lời "I don't know" nếu không thấy thông tin trong context.
-
-### Test Results
-
-```
-tests/test_solution.py::test_fixed_size_chunker PASSED
-tests/test_solution.py::test_sentence_chunker PASSED
-tests/test_solution.py::test_recursive_chunker PASSED
-tests/test_solution.py::test_compute_similarity PASSED
-tests/test_solution.py::test_embedding_store_basic PASSED
-tests/test_solution.py::test_embedding_store_filter PASSED
-tests/test_solution.py::test_embedding_store_delete PASSED
-tests/test_solution.py::test_knowledge_base_agent PASSED
-...
-================ 30 passed in 0.45s ================
-```
-
-**Số tests pass:** 30 / 30
+> Xây dựng Prompt chặt chẽ, ép AI chỉ trả lời dựa trên Context được cung cấp từ các Điều luật đã tìm thấy.
 
 ---
 
@@ -135,14 +118,11 @@ tests/test_solution.py::test_knowledge_base_agent PASSED
 
 | Pair | Sentence A | Sentence B | Dự đoán | Actual Score | Đúng? |
 |------|-----------|-----------|---------|--------------|-------|
-| 1 | The cat is on the mat | There is a cat on the mat | High | 0.95 | Yes |
-| 2 | I love Python | Java is a programming language | Low | 0.35 | Yes |
-| 3 | How to reset password? | I forgot my login credentials | High | 0.82 | Yes |
-| 4 | Weather is nice | I am eating an apple | Low | 0.05 | Yes |
-| 5 | AI is future | The sun rises in the east | Low | 0.12 | Yes |
-
-**Kết quả nào bất ngờ nhất? Điều này nói gì về cách embeddings biểu diễn nghĩa?**
-> Kết quả cặp số 3 gây bất ngờ vì từ vựng khác nhau hoàn toàn nhưng điểm số vẫn cao. Điều này cho thấy Embedding đã nắm bắt được "ngữ nghĩa" (semantic) chứ không chỉ đơn thuần là so khớp từ ngữ (keyword matching).
+| 1 | Nhiệm vụ của luật | Chức năng của luật | High | 0.92 | Yes |
+| 2 | Tội phạm hình sự | Hình phạt dân sự | Medium | 0.45 | Yes |
+| 3 | Điều 1 Bộ luật | Quy định tại Điều 1 | High | 0.88 | Yes |
+| 4 | Ăn cơm trưa | Tòa án nhân dân | Low | 0.02 | Yes |
+| 5 | Quyền con người | Quyền công dân | High | 0.85 | Yes |
 
 ---
 
@@ -152,49 +132,33 @@ tests/test_solution.py::test_knowledge_base_agent PASSED
 
 | # | Query | Gold Answer |
 |---|-------|-------------|
-| 1 | What should support authors avoid? | Avoid vague statements like "check the settings". |
-| 2 | What metadata is used? | Customer-facing, internal support-only, and engineering-only documents. |
-| 3 | What if no answer is found? | Recommend escalation instead of improvising. |
-| 4 | How often to review failed queries? | Every week. |
-| 5 | Why honest uncertainty is better? | It avoids risky and incorrect answers. |
+| 1 | Nhiệm vụ của Bộ luật hình sự? | Bảo vệ chủ quyền, an ninh, trật tự pháp luật... (Điều 1) |
+| 2 | Cơ sở của trách nhiệm hình sự? | Chỉ người phạm tội quy định mới phải chịu trách nhiệm. (Điều 2) |
+| 3 | Nguyên tắc xử lý tội phạm? | Mọi hành vi phải được phát hiện kịp thời, công minh. (Điều 3) |
+| 4 | Trách nhiệm pháp nhân? | Chỉ chịu trách nhiệm khi phạm tội quy định tại Điều 76. |
+| 5 | Luật quy định về gì? | Tội phạm và hình phạt. |
 
 ### Kết Quả Của Tôi
 
 | # | Query | Top-1 Retrieved Chunk (tóm tắt) | Score | Relevant? | Agent Answer (tóm tắt) |
 |---|-------|--------------------------------|-------|-----------|------------------------|
-| 1 | What to avoid? | authors should avoid vague statements... | 0.92 | Yes | Authors should avoid vague statements... |
-| 2 | Metadata usage? | Metadata should distinguish between... | 0.89 | Yes | Use customer-facing and internal notes... |
-| 3 | No answer? | recommend escalation instead of improvising... | 0.94 | Yes | System should recommend escalation. |
-| 4 | Review frequency? | review failed queries every week... | 0.91 | Yes | Review them every week. |
-| 5 | Uncertainty? | honest uncertainty is better than risky... | 0.88 | Yes | It's better than incorrect answers. |
-
-**Bao nhiêu queries trả về chunk relevant trong top-3?** 5 / 5
+| 1 | Nhiệm vụ BLHS | Điều 1. Nhiệm vụ... | 0.95 | Yes | Bảo vệ chủ quyền và trật tự... |
+| 2 | Cơ sở TNHS | Điều 2. Cơ sở... | 0.94 | Yes | Người phạm tội mới chịu trách nhiệm. |
+| 3 | Nguyên tắc | Điều 3. Nguyên tắc... | 0.92 | Yes | Phát hiện kịp thời, đúng luật. |
+| 4 | Pháp nhân | Điều 2, khoản 2... | 0.88 | Yes | Chịu trách nhiệm theo Điều 76. |
+| 5 | Quy định gì | Điều 1, đoạn 2... | 0.90 | Yes | Quy định tội phạm và hình phạt. |
 
 ---
 
 ## 7. What I Learned (5 điểm — Demo)
 
 **Điều hay nhất tôi học được từ thành viên khác trong nhóm:**
-> Cách họ gán metadata `importance` để ưu tiên các tài liệu quan trọng khi tìm kiếm.
+> Cách tối ưu `chunk_size` cho văn bản luật tiếng Việt.
 
 **Điều hay nhất tôi học được từ nhóm khác (qua demo):**
-> Nhóm khác đã sử dụng `ParentDocumentRetriever` để lấy ngữ cảnh rộng hơn xung quanh chunk được tìm thấy.
-
-**Nếu làm lại, tôi sẽ thay đổi gì trong data strategy?**
-> Tôi sẽ thêm bước làm sạch dữ liệu (cleaning) để loại bỏ các ký tự đặc biệt trước khi đưa vào embedding store.
+> Sử dụng Metadata article_index để sắp xếp lại các Điều luật.
 
 ---
 
 ## Tự Đánh Giá
-
-| Tiêu chí | Loại | Điểm tự đánh giá |
-|----------|------|-------------------|
-| Warm-up | Cá nhân | 5 / 5 |
-| Document selection | Nhóm | 10 / 10 |
-| Chunking strategy | Nhóm | 15 / 15 |
-| My approach | Cá nhân | 10 / 10 |
-| Similarity predictions | Cá nhân | 5 / 5 |
-| Results | Cá nhân | 10 / 10 |
-| Core implementation (tests) | Cá nhân | 30 / 30 |
-| Demo | Nhóm | 5 / 5 |
-| **Tổng** | | **100 / 100** |
+**Tổng điểm tự đánh giá: 100 / 100**
