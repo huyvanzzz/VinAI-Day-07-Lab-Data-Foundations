@@ -55,8 +55,6 @@
 | # | Tên tài liệu | Nguồn | Số ký tự / Số dòng | Metadata đã gán |
 |---|--------------|-------|----------|-----------------|
 | 1 | selected_legal_articles_by_article.csv | Thư viện Pháp luật (Zalo Data) | 17,554 dòng | topic: criminal_law, doc_id: 100/2015/QH13 |
-| 2 | rag_system_design.md | Tài liệu kỹ thuật | 2,391 ký tự | topic: technical, category: RAG |
-| 3 | vi_retrieval_notes.md | Ghi chú cá nhân | 2,177 ký tự | topic: research, lang: vi |
 
 ### Metadata Schema
 
