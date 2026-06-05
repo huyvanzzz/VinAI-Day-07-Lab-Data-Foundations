@@ -218,8 +218,6 @@ Pipeline chạy benchmark: `all-MiniLM-L6-v2` -> `EmbeddingStore.search_with_fil
 
 **Bao nhiêu queries trả về chunk relevant trong top-3?** 5 / 5
 
-Kết quả chi tiết được lưu trong `report/legal_benchmark_results.md`.
-
 ### Nhận xét kết quả
 
 Search không filter chỉ đạt **2/5**, vì query dễ retrieve nhầm sang luật khác có từ khóa giống nhau như “dữ liệu”, “giao dịch”, “bảo vệ”. Khi thêm `topic` filter và legal rerank, kết quả đạt **5/5**, cho thấy metadata filter và cấu trúc article title rất quan trọng trong domain pháp luật.
