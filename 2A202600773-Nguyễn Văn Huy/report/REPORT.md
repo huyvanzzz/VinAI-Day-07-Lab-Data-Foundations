@@ -1,8 +1,10 @@
 # Báo Cáo Lab 7: Embedding & Vector Store
 
 **Họ tên:** Nguyễn Văn Huy
-**Nhóm:**  
-**Ngày:** 06/05/
+
+**Nhóm:**  Domain pháp luật Việt Nam
+
+**Ngày:** 06/05/2026
 
 ---
 
