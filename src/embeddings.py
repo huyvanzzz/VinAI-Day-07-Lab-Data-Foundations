@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import math
+import re
 
 LOCAL_EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 OPENAI_EMBEDDING_MODEL = "text-embedding-3-small"
@@ -16,12 +17,13 @@ class MockEmbedder:
         self._backend_name = "mock embeddings fallback"
 
     def __call__(self, text: str) -> list[float]:
-        digest = hashlib.md5(text.encode()).hexdigest()
-        seed = int(digest, 16)
-        vector = []
-        for _ in range(self.dim):
-            seed = (seed * 1664525 + 1013904223) & 0xFFFFFFFF
-            vector.append((seed / 0xFFFFFFFF) * 2 - 1)
+        vector = [0.0] * self.dim
+        tokens = re.findall(r"\w+", text.lower(), flags=re.UNICODE)
+        for token in tokens:
+            digest = hashlib.md5(token.encode()).hexdigest()
+            bucket = int(digest[:8], 16) % self.dim
+            sign = 1.0 if int(digest[8:10], 16) % 2 == 0 else -1.0
+            vector[bucket] += sign
         norm = math.sqrt(sum(value * value for value in vector)) or 1.0
         return [value / norm for value in vector]
 
@@ -29,12 +31,15 @@ class MockEmbedder:
 class LocalEmbedder:
     """Sentence Transformers-backed local embedder."""
 
-    def __init__(self, model_name: str = LOCAL_EMBEDDING_MODEL) -> None:
+    def __init__(self, model_name: str = LOCAL_EMBEDDING_MODEL, local_files_only: bool = True) -> None:
         from sentence_transformers import SentenceTransformer
 
         self.model_name = model_name
         self._backend_name = model_name
-        self.model = SentenceTransformer(model_name)
+        try:
+            self.model = SentenceTransformer(model_name, local_files_only=local_files_only)
+        except TypeError:
+            self.model = SentenceTransformer(model_name)
 
     def __call__(self, text: str) -> list[float]:
         embedding = self.model.encode(text, normalize_embeddings=True)
