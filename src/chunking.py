@@ -34,6 +34,23 @@ class FixedSizeChunker:
                 break
         return chunks
 
+    def split_documents(self, docs: list[Document]) -> list[Document]:
+        """Split a list of documents into chunks while preserving metadata."""
+        chunked_docs = []
+        for doc in docs:
+            chunks = self.chunk(doc.content)
+            for i, chunk_text in enumerate(chunks):
+                # Copy original metadata and add traceability info
+                metadata = doc.metadata.copy()
+                metadata["source_id"] = doc.id
+                metadata["chunk_index"] = i
+                chunked_docs.append(Document(
+                    id=f"{doc.id}_chunk_{i}",
+                    content=chunk_text,
+                    metadata=metadata
+                ))
+        return chunked_docs
+
 
 class SentenceChunker:
     """
@@ -61,6 +78,22 @@ class SentenceChunker:
             chunks.append(" ".join(chunk_sentences))
         
         return chunks
+
+    def split_documents(self, docs: list[Document]) -> list[Document]:
+        """Split a list of documents into chunks while preserving metadata."""
+        chunked_docs = []
+        for doc in docs:
+            chunks = self.chunk(doc.content)
+            for i, chunk_text in enumerate(chunks):
+                metadata = doc.metadata.copy()
+                metadata["source_id"] = doc.id
+                metadata["chunk_index"] = i
+                chunked_docs.append(Document(
+                    id=f"{doc.id}_chunk_{i}",
+                    content=chunk_text,
+                    metadata=metadata
+                ))
+        return chunked_docs
 
 
 class RecursiveChunker:
@@ -126,6 +159,22 @@ class RecursiveChunker:
             final_chunks.append(current_buffer)
             
         return [c for c in final_chunks if c]
+
+    def split_documents(self, docs: list[Document]) -> list[Document]:
+        """Split a list of documents into chunks while preserving metadata."""
+        chunked_docs = []
+        for doc in docs:
+            chunks = self.chunk(doc.content)
+            for i, chunk_text in enumerate(chunks):
+                metadata = doc.metadata.copy()
+                metadata["source_id"] = doc.id
+                metadata["chunk_index"] = i
+                chunked_docs.append(Document(
+                    id=f"{doc.id}_chunk_{i}",
+                    content=chunk_text,
+                    metadata=metadata
+                ))
+        return chunked_docs
 
 
 def _dot(a: list[float], b: list[float]) -> float:
