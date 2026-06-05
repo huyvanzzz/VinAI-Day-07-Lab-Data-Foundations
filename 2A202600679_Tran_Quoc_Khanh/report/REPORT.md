@@ -1,8 +1,8 @@
 # Báo Cáo Lab 7: Embedding & Vector Store
 
 **Họ tên:** Tran Quoc Khanh  
-**Mã/Số:**   
-**Nhóm:** 2A202600679  
+**Mã/Số:**   2A202600679
+**Nhóm:** Domain pháp luật Việt Nam  
 **Ngày:** 2026-06-05
 
 ---
