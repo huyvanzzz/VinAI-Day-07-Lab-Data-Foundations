@@ -18,21 +18,15 @@ class KnowledgeBaseAgent:
         self.llm_fn = llm_fn
 
     def answer(self, question: str, top_k: int = 3) -> str:
-        # 1. Retrieve
         results = self.store.search(question, top_k=top_k)
-        
-        # 2. Build prompt
-        context_parts = [r["content"] for r in results]
-        context_text = "\n---\n".join(context_parts)
-        
-        prompt = f"""You are a helpful assistant. Answer the question based ONLY on the provided context.
-If the answer is not in the context, say "I don't know".
-
-Context:
-{context_text}
-
-Question: {question}
-Answer:"""
-
-        # 3. Generate
+        context = "\n\n".join(
+            f"[{index}] {result['content']}" for index, result in enumerate(results, start=1)
+        )
+        prompt = (
+            "Use the following context chunks to answer the question. "
+            "If the answer is not in the context, say you do not know.\n\n"
+            f"Context:\n{context}\n\n"
+            f"Question: {question}\n"
+            "Answer:"
+        )
         return self.llm_fn(prompt)
